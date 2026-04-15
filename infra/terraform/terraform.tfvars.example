@@ -1,0 +1,16 @@
+prefix              = "scholiq"
+environment         = "prod"
+location_primary    = "Central India"
+location_dr         = "South India"
+sql_admin_login     = "scholiqadmin"
+sql_admin_password  = "ReplaceWithStrongPassword123!"
+allowed_ips         = ["203.0.113.10"]
+
+backend_env = {
+  ANTHROPIC_API_KEY    = "replace_me"
+  YOUTUBE_API_KEY      = "replace_me"
+  SERPAPI_KEY          = "replace_me"
+  SUPABASE_URL         = "https://your-project.supabase.co"
+  SUPABASE_SERVICE_KEY = "replace_me"
+  CORS_ORIGINS         = "https://your-frontend-domain"
+}

@@ -1,0 +1,87 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  REGISTRY: scholiq.azurecr.io
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Setup Node
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+        cache-dependency-path: frontend/package-lock.json
+
+    - name: Frontend Install & Build
+      run: |
+        cd frontend
+        npm ci --frozen-lockfile
+        npm run build
+
+    - name: Setup Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+
+    - name: Backend Install & Test
+      run: |
+        cd backend
+        pip install -r requirements.txt
+        pip install pytest
+        pytest
+
+    - name: Build Docker Images
+      run: |
+        docker build -t ${{ env.REGISTRY }}/backend:${{ github.sha }} backend/
+        docker build -t ${{ env.REGISTRY }}/frontend:${{ github.sha }} frontend/
+
+    - name: Output Images
+      run: |
+        docker images ${{ env.REGISTRY }}/*
+
+  deploy:
+    needs: build-test
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Login to Azure
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+    - name: Login ACR (optional)
+      if: secrets.ACR_USERNAME != ''
+      run: echo ${{ secrets.ACR_PASSWORD }} | docker login ${{ env.REGISTRY }} --username ${{ secrets.ACR_USERNAME }} --password-stdin
+
+    - name: Push Images to ACR (optional)
+      if: secrets.ACR_USERNAME != ''
+      run: |
+        docker tag ${{ env.REGISTRY }}/backend:${{ github.sha }} ${{ env.REGISTRY }}/backend:latest
+        docker tag ${{ env.REGISTRY }}/frontend:${{ github.sha }} ${{ env.REGISTRY }}/frontend:latest
+        docker push ${{ env.REGISTRY }}/backend:${{ github.sha }} || true
+        docker push ${{ env.REGISTRY }}/frontend:${{ github.sha }} || true
+        docker push ${{ env.REGISTRY }}/backend:latest || true
+        docker push ${{ env.REGISTRY }}/frontend:latest || true
+
+    - name: Deploy to App Service (zip deploy sim)
+      uses: azure/webapps-deploy@v3
+      if: false  # Enable after ACR/Terraform deploy
+      with:
+        app-name: 'scholiq-prod-api'
+        slot-name: 'production'
+        publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+        package: '.'
