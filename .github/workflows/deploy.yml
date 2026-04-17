@@ -20,7 +20,7 @@ jobs:
         password: ${{ secrets.DOCKER_PASSWORD }}
 
     - name: Build Docker image
-      run: docker build -t scholiq-backend .
+      run: docker build -t scholiq-backend ./backend
 
     - name: Tag image
       run: docker tag scholiq-backend ${{ secrets.DOCKER_USERNAME }}/scholiq-backend:latest
