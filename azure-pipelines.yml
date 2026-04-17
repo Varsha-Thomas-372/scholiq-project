@@ -1,0 +1,39 @@
+trigger:
+- main
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  imageName: 'scholiq-backend'
+  dockerHub: 'varsha372'
+
+steps:
+
+# Build Docker image
+- script: |
+    docker build -t $(imageName) .
+  displayName: 'Build Docker Image'
+
+# Login to Docker Hub
+- task: Docker@2
+  inputs:
+    command: login
+    containerRegistry: 'DockerHubConnection'
+
+# Tag image
+- script: |
+    docker tag $(imageName) $(dockerHub)/$(imageName):latest
+  displayName: 'Tag Image'
+
+# Push image
+- script: |
+    docker push $(dockerHub)/$(imageName):latest
+  displayName: 'Push Image'
+
+# Deploy to Azure App Service
+- task: AzureWebAppContainer@1
+  inputs:
+    azureSubscription: 'AzureServiceConnection'
+    appName: 'scholiq-prod-api'
+    containers: '$(dockerHub)/$(imageName):latest'
