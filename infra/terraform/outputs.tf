@@ -6,8 +6,8 @@ output "app_service_name" {
   value = module.app_service.app_service_name
 }
 
-output "frontdoor_endpoint" {
-  value = azurerm_cdn_frontdoor_endpoint.main.host_name
+output "app_service_url" {
+  value = module.app_service.default_hostname
 }
 
 output "sql_server_fqdn" {

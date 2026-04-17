@@ -1,11 +1,1 @@
-# Azure Deployment Progress
-Status: Implementation Started
-
-1. [x] Plan approved for workflows
-2. [x] Create .github/workflows/terraform.yml
-3. [x] Create .github/workflows/ci-cd.yml (lint fixed)
-4. [ ] User setup Azure SP + GitHub secrets
-5. [ ] Test workflows (plan on push, manual apply)
-6. [ ] Verify resources in Azure portal
-7. [ ] Update backend_env for ACR if used
-8. [ ] Complete deployment verification
+# Azure Terraform Connection TODO&#10;&#10;## [x] 1. Install/Verify Azure CLI and Terraform&#10;## [x] 2. Create terraform.tfvars from example (fill placeholders)&#10;## [x] 3. Azure CLI login (az login) - SUCCESS: Azure for Students sub 4a4ec0e6...&#10;## [ ] 4. cd infra/terraform ; terraform init - Retrying&#10;## [ ] 5. terraform validate&#10;## [ ] 6. terraform plan -var-file="terraform.tfvars"&#10;## [ ] 7. (Optional) terraform apply&#10;## [ ] 8. Test connection (query outputs)&#10;&#10;* Azure connected via CLI!&#10;* Init downloads azurerm provider/modules.&#10;* Plan will list +XX resources (App Service, SQL, etc.).&#10;* Ready for `terraform apply` after review.

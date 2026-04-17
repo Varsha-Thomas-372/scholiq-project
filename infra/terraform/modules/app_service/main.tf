@@ -3,7 +3,7 @@ resource "azurerm_service_plan" "main" {
   resource_group_name = var.resource_group
   location            = var.location_primary
   os_type             = "Linux"
-  sku_name            = "P1v2"
+  sku_name            = "B1"   # ✅ FIXED (Student-friendly)
   tags                = var.tags
 }
 
@@ -16,12 +16,14 @@ resource "azurerm_linux_web_app" "backend" {
   tags                = var.tags
 
   site_config {
-    always_on = true
+    always_on = false   # ✅ FIXED (B1 doesn’t support true)
+
     application_stack {
-      docker_image_name   = "scholiq-backend:latest"
-      docker_registry_url = "https://scholiqacr.azurecr.io"
+      docker_image_name   = "nginx:latest"   # ✅ TEMP SAFE IMAGE
+      docker_registry_url = "https://index.docker.io"
     }
-    health_check_path = "/health"
+
+    health_check_path   = "/"
     minimum_tls_version = "1.2"
   }
 
@@ -29,6 +31,6 @@ resource "azurerm_linux_web_app" "backend" {
     APPLICATIONINSIGHTS_CONNECTION_STRING = var.app_insights_key
     SQL_CONNECTION_STRING                 = var.sql_connection
     STORAGE_ACCOUNT_NAME                  = var.storage_account
-    WEBSITES_PORT                         = "8000"
+    WEBSITES_PORT                         = "80"
   })
 }
