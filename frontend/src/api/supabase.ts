@@ -1,10 +1,4 @@
 import { createClient } from "@supabase/supabase-js";
 
-const url = import.meta.env.VITE_SUPABASE_URL as string;
-const anon = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
-
-if (!url || !anon) {
-  throw new Error("Missing Supabase frontend env variables.");
-}
-
-export const supabase = createClient(url, anon);
+// Supabase deprecated - use azure_auth.ts and backend.ts
+// Remove VITE_SUPABASE_* from .env

@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from app.services.supabase_service import get_faculty_cohort
+from app.services.azure_db_service import get_faculty_cohort
 
 router = APIRouter(prefix="/faculty", tags=["faculty"])
 

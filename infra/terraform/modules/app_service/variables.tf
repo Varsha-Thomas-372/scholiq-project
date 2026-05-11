@@ -29,6 +29,12 @@ variable "storage_account" {
   type = string
 }
 
+variable "keyvault_name" {
+  type = string
+  default = ""
+}
+
 variable "tags" {
   type = map(string)
 }
+

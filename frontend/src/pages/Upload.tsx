@@ -2,7 +2,8 @@ import { useCallback, useEffect, useState } from "react";
 import { useDropzone } from "react-dropzone";
 import { useNavigate } from "react-router-dom";
 import { parseSyllabus, listSyllabuses } from "../api/backend";
-import { supabase } from "../api/supabase";
+import { getToken } from "../api/azure_auth";
+// import { supabase } from "../api/supabase"; // Removed for Azure migration
 import { useAuth } from "../context/AuthContext";
 import { AppShell } from "../layout/AppShell";
 
@@ -43,18 +44,23 @@ export function UploadPage() {
         const syllabusName = fileName.trim() || parsed.subject;
         
         // Insert new syllabus (keep old ones for reference)—multi-upload enabled
-        const { data: syllabiData, error: syllabusError } = await supabase
-          .from("syllabi")
-          .insert({
+        const token = await getToken();
+        const syllabusRes = await fetch(`http://localhost:8000/syllabi`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
             user_id: user.id,
             subject: syllabusName,
             raw_text: parsed.raw_text,
             parsed_json: { subject: syllabusName, units: parsed.units }
-          })
-          .select("id")
-          .single();
-        if (syllabusError) throw syllabusError;
-        const newId = syllabiData.id as string;
+          }),
+        });
+        if (!syllabusRes.ok) throw new Error(await syllabusRes.text());
+        const syllabiData = await syllabusRes.json();
+        const newId = syllabiData[0].id;
         
         // Refresh list
         listSyllabuses(user.id).then(setSyllabi);
@@ -73,8 +79,15 @@ export function UploadPage() {
           }))
         );
         if (topicRows.length) {
-          const { error: topicsError } = await supabase.from("topics").insert(topicRows);
-          if (topicsError) throw topicsError;
+          const topicsRes = await fetch(`http://localhost:8000/topics`, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(topicRows),
+          });
+          if (!topicsRes.ok) throw new Error(await topicsRes.text());
         }
         navigate("/resources");
       } catch (err) {

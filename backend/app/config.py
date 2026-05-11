@@ -10,13 +10,11 @@ class Settings(BaseSettings):
     anthropic_api_key: str = ""
     youtube_api_key: str = ""
     serpapi_key: str = ""
-    supabase_url: str = ""
-    supabase_service_key: str = ""
-    cors_origins: str = "http://localhost:5173"
-
-    @property
-    def cors_origins_list(self) -> List[str]:
-        return [origin.strip() for origin in self.cors_origins.split(",") if origin.strip()]
+    azure_sql_connstr: str = ""
+    azure_storage_account: str = ""
+    azure_storage_key: str = ""
+    azure_keyvault_uri: str = ""
+    cors_origins: str = "http://localhost:5173,https://*.azurewebsites.net"
 
 
 @lru_cache

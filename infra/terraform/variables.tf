@@ -1,48 +1,41 @@
 variable "prefix" {
-  type        = string
-  description = "Project prefix"
-  default     = "scholiq"
+  type    = string
+  default = "scholiq"
 }
 
 variable "environment" {
-  type        = string
-  description = "Environment name"
-  default     = "prod"
+  type    = string
+  default = "prod"
 }
 
 variable "location_primary" {
-  type        = string
-  description = "Primary Azure region"
-  default     = "Central India"
+  default = "koreacentral"
 }
 
 variable "location_dr" {
-  type        = string
-  description = "Disaster recovery region"
-  default     = "South India"
+  default = "koreasouth"
+}
+
+variable "resource_group_name" {
+  type    = string
+  default = "scholiq-prod-rg"
 }
 
 variable "sql_admin_login" {
-  type        = string
-  description = "Azure SQL administrator login"
-  sensitive   = true
+  type = string
 }
 
 variable "sql_admin_password" {
-  type        = string
-  description = "Azure SQL administrator password"
-  sensitive   = true
+  type      = string
+  sensitive = true
 }
 
 variable "allowed_ips" {
-  type        = list(string)
-  description = "Public IPs allowed to access SQL"
-  default     = []
+  type    = list(string)
+  default = []
 }
 
 variable "backend_env" {
-  type        = map(string)
-  description = "Backend environment variables for App Service"
-  default     = {}
-  sensitive   = true
+  type    = map(string)
+  default = {}
 }

@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 
 from app.models.schemas import SignupRequest
-from app.services.supabase_service import upsert_user_profile
+from app.services.azure_db_service import upsert_user_profile
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 

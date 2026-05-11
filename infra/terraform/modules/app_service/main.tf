@@ -15,11 +15,15 @@ resource "azurerm_linux_web_app" "backend" {
   https_only          = true
   tags                = var.tags
 
+  identity {
+    type = "SystemAssigned"
+  }
+
   site_config {
-    always_on = false   # ✅ FIXED (B1 doesn’t support true)
+    always_on = false   # ✅ FIXED (B1 doesn't support true)
 
     application_stack {
-      docker_image_name   = "nginx:latest"   # ✅ TEMP SAFE IMAGE
+      docker_image_name   = "nginx:latest"   # ✅ TEMP SAFE IMAGE - update to scholiq.azurecr.io/backend:latest after ACR
       docker_registry_url = "https://index.docker.io"
     }
 
@@ -32,5 +36,7 @@ resource "azurerm_linux_web_app" "backend" {
     SQL_CONNECTION_STRING                 = var.sql_connection
     STORAGE_ACCOUNT_NAME                  = var.storage_account
     WEBSITES_PORT                         = "80"
+    KEY_VAULT_NAME                        = var.keyvault_name
   })
 }
+

@@ -77,11 +77,20 @@ jobs:
         docker push ${{ env.REGISTRY }}/backend:latest || true
         docker push ${{ env.REGISTRY }}/frontend:latest || true
 
-    - name: Deploy to App Service (zip deploy sim)
+    - name: Deploy Backend to ACR & App Service
+      run: |
+        docker tag ${{ env.REGISTRY }}/backend:${{ github.sha }} ${{ env.REGISTRY }}/backend:latest
+        docker tag ${{ env.REGISTRY }}/frontend:${{ github.sha }} ${{ env.REGISTRY }}/frontend:latest
+        docker push ${{ env.REGISTRY }}/backend:latest
+        docker push ${{ env.REGISTRY }}/frontend:latest
+      env:
+        ACR_USERNAME: ${{ secrets.ACR_USERNAME }}
+        ACR_PASSWORD: ${{ secrets.ACR_PASSWORD }}
+        
+    - name: Azure App Service Deploy
       uses: azure/webapps-deploy@v3
-      if: false  # Enable after ACR/Terraform deploy
       with:
         app-name: 'scholiq-prod-api'
-        slot-name: 'production'
         publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
-        package: '.'
+        images: '${{ env.REGISTRY }}/backend:latest'
+

@@ -1,39 +1,70 @@
 trigger:
-- main
+  - main
 
 pool:
-  vmImage: 'ubuntu-latest'
+  vmImage: ubuntu-latest
 
 variables:
-  imageName: 'scholiq-backend'
-  dockerHub: 'varsha372'
+  # Azure resources created by Terraform
+  REGISTRY: scholiq.azurecr.io
+  ACR_NAME: scholiqprod
+  APP_NAME: scholiq-prod-api
+  RESOURCE_GROUP: scholiq-prod-rg
 
-steps:
+stages:
+  - stage: BuildAndPush
+    jobs:
+      - job: Build
+        steps:
+          - checkout: self
 
-# Build Docker image
-- script: |
-    docker build -t $(imageName) .
-  displayName: 'Build Docker Image'
+          - task: UsePythonVersion@0
+            inputs:
+              versionSpec: '3.12'
 
-# Login to Docker Hub
-- task: Docker@2
-  inputs:
-    command: login
-    containerRegistry: 'DockerHubConnection'
+          - task: Docker@2
+            displayName: Build backend image
+            inputs:
+              command: build
+              repository: backend
+              dockerfile: 'backend/Dockerfile'
+              buildContext: '$(Build.SourcesDirectory)'
+              tags: |
+                $(Build.BuildId)
+                latest
 
-# Tag image
-- script: |
-    docker tag $(imageName) $(dockerHub)/$(imageName):latest
-  displayName: 'Tag Image'
+          # Login to ACR using Azure CLI credentials from a Service Connection
+          - task: AzureCLI@2
+            displayName: Login to ACR
+            inputs:
+              azureSubscription: 'AZURE_SERVICE_CONNECTION'
+              scriptType: bash
+              scriptLocation: inlineScript
+              inlineScript: |
+                az acr login --name $(ACR_NAME)
 
-# Push image
-- script: |
-    docker push $(dockerHub)/$(imageName):latest
-  displayName: 'Push Image'
+          # Tag and push to ACR
+          - task: Docker@2
+            displayName: Push backend image to ACR
+            inputs:
+              command: push
+              repository: backend
+              containerRegistry: 'ACR_SERVICE_CONNECTION'
+              tags: |
+                $(Build.BuildId)
+                latest
 
-# Deploy to Azure App Service
-- task: AzureWebAppContainer@1
-  inputs:
-    azureSubscription: 'AzureServiceConnection'
-    appName: 'scholiq-prod-api'
-    containers: '$(dockerHub)/$(imageName):latest'
+  - stage: Deploy
+    dependsOn: BuildAndPush
+    jobs:
+      - job: DeployWebApp
+        steps:
+          # Deploy container to App Service (expects the image tag to be available in ACR)
+          - task: AzureWebAppContainer@2
+            displayName: Deploy backend to App Service
+            inputs:
+              azureSubscription: 'AZURE_SERVICE_CONNECTION'
+              appName: '$(APP_NAME)'
+              containers: |
+                $(REGISTRY)/backend:latest
+

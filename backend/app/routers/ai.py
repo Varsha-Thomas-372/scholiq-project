@@ -12,11 +12,12 @@ from app.services.anthropic_service import (
 )
 from app.services.pdf_service import extract_pdf_text
 from app.services.resource_service import fetch_topic_resources
-from app.services.supabase_service import delete_schedule, delete_syllabus_and_schedule, list_syllabuses
+from app.services.azure_db_service import delete_schedule, delete_syllabus_and_schedule, list_syllabuses
 
 # Import the new robust parser from backend service location
 try:
-    from app.services.syllabus_parser import parse_syllabus as robust_parse_syllabus
+# No supabase import - all Azure
+from app.services.syllabus_parser import parse_syllabus as robust_parse_syllabus
 except ImportError as e:
     print(f"Failed to load robust syllabus parser: {e}")
     robust_parse_syllabus = None
